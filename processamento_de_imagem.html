@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carregar Imagens e Filtro Cinza com Ajuste de Luminosidade</title>
+  <link rel="stylesheet" href="./processamento_de_imagem.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- Coluna Esquerda com o campo de imagem 1 -->
+    <div class="image-column">
+      <label for="file-upload-1">Selecione Imagem 1</label>
+      <input type="file" id="file-upload-1" accept="image/png, image/jpeg, image/jpg, image/bmp"
+        onchange="loadImage(1)" />
+      <div id="image-1"></div>
+      <div>
+        <input style="width: 50px; height: 50px; text-align: center; font-size: 16px; " type="number" id="limiar-value"
+          min="0" max="255" step="1" value="128" />
+        <button onclick="limiarImages()">Limiarização</button>
+      </div>
+      <button onclick="histograma()">
+        Histograma
+        da imagem
+      </button>
+      <button onclick="applyMedianFilter()">Filtro de remoção de ruído</button>
+      <div>
+        <input style="width: 50px; height: 50px; text-align: center; font-size: 16px; " type="number" id="order-value"
+          min="1" max="9" step="1" value="1" />
+        <button onclick="applyOrderFilter()">Filtro Ordem</button>
+      </div>
+      <button onclick="applyConservativeSmoothing()">Filtro de Suavização Conservativa</button>
+      <div>
+        <input style="width: 50px; height: 50px; text-align: center; font-size: 16px; " type="number"
+          id="gaussiano-value" min="1" max="10" step="0.1" value="1" />
+        <button onclick="applyGaussianFilter()">Filtro Gaussiano</button>
+      </div>
+      <button onclick="applyPrewittFilter()">Filtro de Bordas 1 ordem - Prewitt</button>
+      <button onclick="applySobelFilter()">Filtro de Bordas 1 ordem - Sobel</button>
+      <button onclick="applyLaplacianFilter()">Filtro de Bordas 2 ordem - Laplacian</button>
+
+
+      <button onclick="showMorphologicalResult('opening')">Filtro Morfolóligo - Abertura</button>
+      <button onclick="showMorphologicalResult('closing')">Filtro Morfolóligo - Fechamento</button>
+      <button onclick="showMorphologicalResult('outline')">Filtro Morfolóligo - Contorno</button>
+    </div>
+
+    <!-- Coluna Direita com o campo de imagem 2 -->
+    <div class="image-column">
+      <label for="file-upload-2">Selecione Imagem 2</label>
+      <input type="file" id="file-upload-2" accept="image/png, image/jpeg, image/jpg, image/bmp"
+        onchange="loadImage(2)" />
+      <div id="image-2"></div>
+      <button onclick="subtractImages()">
+        Subtrair
+        Imagens
+      </button>
+      <button onclick="addImages()">
+        Somar
+        Imagens
+      </button>
+      <button onclick="differenceImages()">
+        Diferença entre
+        duas Imagens
+      </button>
+      <div>
+        <input style="width: 50px; height: 50px; text-align: center; font-size: 16px; " type="number"
+          id="blending-value" min="0" max="1" step="0.1" value="0" />
+        <button onclick="blendImages()">Misturar Imagens</button>
+      </div>
+      <button onclick="averageImages()">
+        Média entre
+        duas Imagens
+      </button>
+      <div>
+        <button onclick="logicalOperations('AND')">
+          AND
+        </button>
+        <button onclick="logicalOperations('OR')">
+          OR
+        </button>
+        <button onclick="logicalOperations('NOT')">
+          NOT
+        </button>
+        <button onclick="logicalOperations('XOR')">
+          XOR
+        </button>
+      </div>
+      <br>
+
+      <button id="save-button" onclick="saveImage()" style="background-color: green;">Salvar Imagem com</button>
+      <button id="reset-button" onclick="resetFilter()">Resetar filtros</button>
+      <button id="reset-button" onclick="resetImages()">Apagar Imagens</button>
+    </div>
+
+    <!-- Coluna de Resultado -->
+    <div id="result-column">
+      <h2>Resultado</h2>
+      <div id="result">
+        <p>As imagens carregadas aparecerão aqui!</p>
+      </div>
+
+      <!-- Controles de Luminosidade -->
+      <div class="luminosity-container">
+        <label for="luminosity-value">Ajuste de Luminosidade (0 a 255):</label>
+        <div class="luminosity-controls">
+          <input type="number" id="luminosity-value" min="0" max="255" value="0" />
+          <button onclick="changeLuminosity('increase')">
+            Adicionar
+          </button>
+          <button onclick="changeLuminosity('decrease')">
+            Subtrair
+          </button>
+          <button onclick="changeLuminosity('multiply')">
+            Multiplicar
+          </button>
+          <button onclick="changeLuminosity('divide')">
+            Dividir
+          </button>
+        </div>
+      </div>
+
+      <div class="luminosity-container">
+        <label for="filter-bit">Selecione o Tipo de Filtro Cinza:</label>
+        <select id="filter-bit">
+          <option value="8bit">8 bits (0-255)</option>
+          <option value="1bit">1 bit (0 ou 1)</option>
+        </select>
+        <button id="show-result-button" onclick="showGrayResult()">
+          Filtro Cinza
+        </button>
+      </div>
+      <div class="rotate-container">
+        <label for="rotation">Selecione o Tipo de rotação:</label>
+        <select id="rotation">
+          <option value="left-right">Esquerda para direita</option>
+          <option value="up-down">Cima para baixo</option>
+        </select>
+        <button id="show-result-button" onclick="RotateImage()">
+          Rotacionar
+        </button>
+      </div>
+      <div class="rotate-container">
+        <p for="rotation">Selecione o Tipo de Filtro: Max, Min, Mean</p>
+        <select id="filter-MMM">
+          <option value="MAX">Máximo</option>
+          <option value="MIN">Mínimo</option>
+          <option value="MEAN">Médio</option>
+        </select>
+        <button onclick="FilterMaxMinMean()">Aplicar Filtro</button>
+      </div>
+      <div>
+        <label for="morphology-type">Tipo de Estrutura:</label>
+        <select id="morphology-type">
+          <option value="square">Quadrado (Square)</option>
+          <option value="diamond">Diamante (Diamond)</option>
+          <option value="line">Linha Horizontal (Line)</option>
+        </select>
+        <button onclick="showMorphologicalResult('dilate')">Filtro Morfolóligo - Dilatação</button>
+        <button onclick="showMorphologicalResult('erode')">Filtro Morfolóligo - Erosão</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./processamento_de_imagem.js"></script>
+</body>
+
+</html>
