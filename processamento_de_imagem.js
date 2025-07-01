@@ -281,6 +281,11 @@ function subtractImages() {
   }
 }
 
+function getKernelSize() {
+  const kernelValue = document.getElementById("filter-kernel").value;
+  return parseInt(kernelValue, 10);
+}
+
 function subtractPixelData(imageData1, imageData2) {
   let data1 = imageData1.data;
   let data2 = imageData2.data;
@@ -904,7 +909,7 @@ function histograma() {
       newData[idx + 3] = 255; // A (opacidade)
     }
 
-    // Mostrar imagem equalizada na área da imagem (existe)
+    // Mostrar imagem equalizada na área da imagem 2 já existente
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -946,8 +951,10 @@ function drawHistogram(histogram, title = "") {
   resultContainer.appendChild(canvas);
 }
 
-function FilterMaxMinMean(filterType) {
+function FilterMaxMinMean() {
   const resultContainer = document.getElementById("result");
+  const kernelSize = getKernelSize();
+  const offset = Math.floor(kernelSize / 2);
 
   if (image1Url) {
     let img = new Image();
@@ -964,50 +971,43 @@ function FilterMaxMinMean(filterType) {
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let data = imageData.data;
 
-      // Criar uma nova imagem de saída
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      // Iterar sobre cada pixel da imagem
-      for (let y = 1; y < canvas.height - 1; y++) {
-        for (let x = 1; x < canvas.width - 1; x++) {
-          // Calcular o índice do pixel atual
+      // Itera sobre cada pixel, respeitando as bordas de acordo com o offset
+      for (let y = offset; y < canvas.height - offset; y++) {
+        for (let x = offset; x < canvas.width - offset; x++) {
           let index = (y * canvas.width + x) * 4;
 
-          // Obter os valores RGB e A dos pixels vizinhos
-          let neighbors = getNeighbors(x, y, canvas, data);
+          // Passa o kernelSize para a função getNeighbors
+          let neighbors = getNeighbors(x, y, canvas, data, kernelSize);
 
           let r, g, b;
           switch (filterTypeMMM) {
             case "MAX":
-              // Filtro MAX
               r = Math.max(...neighbors.r);
               g = Math.max(...neighbors.g);
               b = Math.max(...neighbors.b);
               break;
             case "MIN":
-              // Filtro MIN
               r = Math.min(...neighbors.r);
               g = Math.min(...neighbors.g);
               b = Math.min(...neighbors.b);
               break;
             case "MEAN":
-              // Filtro MEAN
               r = Math.round(average(neighbors.r));
               g = Math.round(average(neighbors.g));
               b = Math.round(average(neighbors.b));
               break;
           }
 
-          // Atualizar a imagem resultante com os novos valores
-          newData[index] = r; // Red
-          newData[index + 1] = g; // Green
-          newData[index + 2] = b; // Blue
-          newData[index + 3] = 255; // Alpha (opacidade)
+          newData[index] = r;
+          newData[index + 1] = g;
+          newData[index + 2] = b;
+          newData[index + 3] = 255;
         }
       }
 
-      // Atualizar a imagem com a nova imagem processada
       ctx.putImageData(newImageData, 0, 0);
       resultContainer.innerHTML = `<p>Imagem após filtro:</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
     };
@@ -1017,14 +1017,15 @@ function FilterMaxMinMean(filterType) {
 }
 
 // Função para obter os vizinhos de um pixel
-function getNeighbors(x, y, canvas, data) {
+function getNeighbors(x, y, canvas, data, kernelSize) {
   let r = [];
   let g = [];
   let b = [];
 
-  // Iterar sobre uma janela 3x3 (com o pixel central em x, y)
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
+  const offset = Math.floor(kernelSize / 2);
+
+  for (let dy = -offset; dy <= offset; dy++) {
+    for (let dx = -offset; dx <= offset; dx++) {
       let nx = x + dx;
       let ny = y + dy;
       let index = (ny * canvas.width + nx) * 4;
@@ -1046,6 +1047,8 @@ function average(arr) {
 
 function applyMedianFilter() {
   const resultContainer = document.getElementById("result");
+  const kernelSize = getKernelSize(); // Pega o tamanho do kernel
+  const offset = Math.floor(kernelSize / 2); // Calcula a borda
 
   if (image1Url) {
     let img = new Image();
@@ -1062,33 +1065,25 @@ function applyMedianFilter() {
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let data = imageData.data;
 
-      // Criar uma nova imagem de saída
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      // Iterar sobre cada pixel da imagem
-      for (let y = 1; y < canvas.height - 1; y++) {
-        for (let x = 1; x < canvas.width - 1; x++) {
-          // Calcular o índice do pixel atual
+      for (let y = offset; y < canvas.height - offset; y++) {
+        for (let x = offset; x < canvas.width - offset; x++) {
           let index = (y * canvas.width + x) * 4;
+          let neighbors = getNeighbors(x, y, canvas, data, kernelSize); // Passa o kernelSize
 
-          // Obter os valores RGB dos vizinhos (janela 3x3) usando a função getNeighbors
-          let neighbors = getNeighbors(x, y, canvas, data);
-
-          // Aplicar o filtro de mediana para cada canal RGB
           let r = median(neighbors.r);
           let g = median(neighbors.g);
           let b = median(neighbors.b);
 
-          // Atualizar a imagem resultante com os novos valores
-          newData[index] = r; // Red
-          newData[index + 1] = g; // Green
-          newData[index + 2] = b; // Blue
-          newData[index + 3] = 255; // Alpha (opacidade)
+          newData[index] = r;
+          newData[index + 1] = g;
+          newData[index + 2] = b;
+          newData[index + 3] = 255;
         }
       }
 
-      // Atualizar a imagem com a nova imagem processada
       ctx.putImageData(newImageData, 0, 0);
       resultContainer.innerHTML = `<p>Imagem após filtro de Mediana:</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
     };
@@ -1105,12 +1100,17 @@ function median(arr) {
 }
 
 function applyOrderFilter() {
-  let order = parseInt(document.getElementById("order-value").value);
-
-  // Garantir que o valor de 'order' esteja entre 1 e 9
-  order = order < 1 ? 1 : order > 9 ? 9 : order;
-
   const resultContainer = document.getElementById("result");
+  const kernelSize = getKernelSize(); // Pega o tamanho do kernel
+  const offset = Math.floor(kernelSize / 2); // Calcula a borda
+  let order = parseInt(document.getElementById("order-value").value);
+  const maxOrder = kernelSize * kernelSize;
+
+  // Garante que o valor de 'order' seja válido para o kernel atual
+  if (order < 1) order = 1;
+  if (order > maxOrder) order = maxOrder;
+  document.getElementById("order-value").value = order; // Atualiza o campo no HTML
+  document.getElementById("order-value").max = maxOrder; // Atualiza o max do input
 
   if (image1Url) {
     let img = new Image();
@@ -1127,33 +1127,25 @@ function applyOrderFilter() {
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let data = imageData.data;
 
-      // Criar uma nova imagem de saída
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      // Iterar sobre cada pixel da imagem
-      for (let y = 1; y < canvas.height - 1; y++) {
-        for (let x = 1; x < canvas.width - 1; x++) {
-          // Calcular o índice do pixel atual
+      for (let y = offset; y < canvas.height - offset; y++) {
+        for (let x = offset; x < canvas.width - offset; x++) {
           let index = (y * canvas.width + x) * 4;
+          let neighbors = getNeighbors(x, y, canvas, data, kernelSize); // Passa o kernelSize
 
-          // Obter os valores RGB dos vizinhos (janela 3x3) usando a função getNeighbors
-          let neighbors = getNeighbors(x, y, canvas, data);
-
-          // Aplicar o filtro de ordem para cada canal RGB
           let r = orderFilter(neighbors.r, order);
           let g = orderFilter(neighbors.g, order);
           let b = orderFilter(neighbors.b, order);
 
-          // Atualizar a imagem resultante com os novos valores
-          newData[index] = r; // Red
-          newData[index + 1] = g; // Green
-          newData[index + 2] = b; // Blue
-          newData[index + 3] = 255; // Alpha (opacidade)
+          newData[index] = r;
+          newData[index + 1] = g;
+          newData[index + 2] = b;
+          newData[index + 3] = 255;
         }
       }
 
-      // Atualizar a imagem com a nova imagem processada
       ctx.putImageData(newImageData, 0, 0);
       resultContainer.innerHTML = `<p>Imagem após filtro de Ordem:</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
     };
@@ -1170,6 +1162,8 @@ function orderFilter(arr, order) {
 
 function applyConservativeSmoothing() {
   const resultContainer = document.getElementById("result");
+  const kernelSize = getKernelSize(); // Pega o tamanho do kernel
+  const offset = Math.floor(kernelSize / 2); // Calcula a borda
 
   if (image1Url) {
     let img = new Image();
@@ -1189,11 +1183,18 @@ function applyConservativeSmoothing() {
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      for (let y = 1; y < canvas.height - 1; y++) {
-        for (let x = 1; x < canvas.width - 1; x++) {
+      for (let y = offset; y < canvas.height - offset; y++) {
+        for (let x = offset; x < canvas.width - offset; x++) {
           let index = (y * canvas.width + x) * 4;
 
-          let neighbors = getNeighborsWithoutCenter(x, y, canvas, data);
+          // Passa o kernelSize para a função
+          let neighbors = getNeighborsWithoutCenter(
+            x,
+            y,
+            canvas,
+            data,
+            kernelSize
+          );
 
           for (let ch = 0; ch < 3; ch++) {
             let neighborValues;
@@ -1214,7 +1215,7 @@ function applyConservativeSmoothing() {
             }
           }
 
-          newData[index + 3] = 255; // Alpha
+          newData[index + 3] = 255;
         }
       }
 
@@ -1226,13 +1227,15 @@ function applyConservativeSmoothing() {
   }
 }
 
-function getNeighborsWithoutCenter(x, y, canvas, data) {
+function getNeighborsWithoutCenter(x, y, canvas, data, kernelSize) {
   let r = [],
     g = [],
     b = [];
 
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
+  const offset = Math.floor(kernelSize / 2);
+
+  for (let dy = -offset; dy <= offset; dy++) {
+    for (let dx = -offset; dx <= offset; dx++) {
       if (dx === 0 && dy === 0) continue; // ignora o pixel central
 
       let nx = x + dx;
@@ -1248,9 +1251,11 @@ function getNeighborsWithoutCenter(x, y, canvas, data) {
   return { r, g, b };
 }
 
-function applyGaussianFilter(kernelSize = 5) {
+function applyGaussianFilter() {
   const resultContainer = document.getElementById("result");
-  sigma = document.getElementById("gaussiano-value").value;
+  const sigma = parseFloat(document.getElementById("gaussiano-value").value);
+  const kernelSize = getKernelSize(); // Pega o tamanho do kernel do select
+  const offset = Math.floor(kernelSize / 2); // Calcula a borda
 
   if (image1Url) {
     let img = new Image();
@@ -1267,42 +1272,21 @@ function applyGaussianFilter(kernelSize = 5) {
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let data = imageData.data;
 
-      // Gerar o kernel gaussiano
       const kernel = generateGaussianKernel(sigma, kernelSize);
 
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      for (
-        let y = Math.floor(kernelSize / 2);
-        y < canvas.height - Math.floor(kernelSize / 2);
-        y++
-      ) {
-        for (
-          let x = Math.floor(kernelSize / 2);
-          x < canvas.width - Math.floor(kernelSize / 2);
-          x++
-        ) {
+      for (let y = offset; y < canvas.height - offset; y++) {
+        for (let x = offset; x < canvas.width - offset; x++) {
           let r = 0,
             g = 0,
             b = 0;
 
-          // Convolução do kernel com os pixels
-          for (
-            let ky = -Math.floor(kernelSize / 2);
-            ky <= Math.floor(kernelSize / 2);
-            ky++
-          ) {
-            for (
-              let kx = -Math.floor(kernelSize / 2);
-              kx <= Math.floor(kernelSize / 2);
-              kx++
-            ) {
+          for (let ky = -offset; ky <= offset; ky++) {
+            for (let kx = -offset; kx <= offset; kx++) {
               let pixelIndex = ((y + ky) * canvas.width + (x + kx)) * 4;
-              let weight =
-                kernel[ky + Math.floor(kernelSize / 2)][
-                  kx + Math.floor(kernelSize / 2)
-                ];
+              let weight = kernel[ky + offset][kx + offset];
 
               r += data[pixelIndex] * weight;
               g += data[pixelIndex + 1] * weight;
@@ -1314,7 +1298,7 @@ function applyGaussianFilter(kernelSize = 5) {
           newData[index] = r;
           newData[index + 1] = g;
           newData[index + 2] = b;
-          newData[index + 3] = 255; // Alpha
+          newData[index + 3] = 255;
         }
       }
 
@@ -1556,6 +1540,7 @@ function binarizeImage(imageData, threshold = 127) {
 }
 
 function dilateImage(imageData, type) {
+  console.log("Dilating image with type:", type);
   const binarized = structuredCloneImageData(imageData);
   binarizeImage(binarized);
 
@@ -1665,22 +1650,25 @@ function structuredCloneImageData(imageData) {
   return copy;
 }
 
-function applyOutline(imageData) {
-  // Para o contorno, primeiro dilatar a imagem, depois comparar com a original
-  let dilated = dilateImage(imageData);
-  let data = imageData.data;
-  let dilatedData = dilated.data;
-  let width = imageData.width;
-  let height = imageData.height;
+function applyOutline(originalImageData, type) {
+  const binarizedOriginal = structuredCloneImageData(originalImageData);
+  binarizeImage(binarizedOriginal);
 
-  let output = new ImageData(width, height);
-  let outputData = output.data;
+  const eroded = erodeImage(originalImageData, type);
 
-  for (let i = 0; i < data.length; i += 4) {
-    let diff = Math.abs(data[i] - dilatedData[i]);
+  const output = new ImageData(
+    originalImageData.width,
+    originalImageData.height
+  );
+  const originalData = binarizedOriginal.data;
+  const erodedData = eroded.data;
+  const outputData = output.data;
 
-    outputData[i] = outputData[i + 1] = outputData[i + 2] = diff > 0 ? 255 : 0;
-    outputData[i + 3] = 255; // Manter opacidade
+  for (let i = 0; i < originalData.length; i += 4) {
+    let diff = originalData[i] - erodedData[i];
+
+    outputData[i] = outputData[i + 1] = outputData[i + 2] = diff;
+    outputData[i + 3] = 255;
   }
 
   return output;
@@ -1730,14 +1718,24 @@ function showMorphologicalResult(operation) {
         break;
 
       case "outline":
-        const dilated = dilateImage(imageData, type);
+        // A lógica de contorno correta é a diferença entre o original e o erodido.
+        // Ambos devem usar o mesmo elemento estruturante 'type'.
+
+        // 1. Binariza a imagem original para ter uma base de comparação.
+        const binarizedOriginal = structuredCloneImageData(imageData);
+        binarizeImage(binarizedOriginal);
+
+        // 2. Faz a erosão da imagem original.
+        const erodedImageResult = erodeImage(imageData, type);
+
+        // 3. Calcula a diferença (Borda = Original Binarizada - Erosão)
         resultImageData = new ImageData(canvas.width, canvas.height);
         for (let i = 0; i < imageData.data.length; i += 4) {
-          const diff = Math.abs(imageData.data[i] - dilated.data[i]);
+          const diff = binarizedOriginal.data[i] - erodedImageResult.data[i];
           resultImageData.data[i] =
             resultImageData.data[i + 1] =
             resultImageData.data[i + 2] =
-              diff > 0 ? 255 : 0;
+              diff; // O resultado da subtração já será 0 ou 255
           resultImageData.data[i + 3] = 255;
         }
         break;
@@ -1748,14 +1746,14 @@ function showMorphologicalResult(operation) {
   };
 }
 
-function applyOpening(imageData, type) {
-  const eroded = erodeImage(imageData, type);
-  const opened = dilateImage(eroded, type);
-  return opened;
-}
-
 function applyClosing(imageData, type) {
   const dilated = dilateImage(imageData, type);
   const closed = erodeImage(dilated, type);
   return closed;
+}
+
+function applyOpening(imageData, type) {
+  const eroded = erodeImage(imageData, type);
+  const opened = dilateImage(eroded, type);
+  return opened;
 }
