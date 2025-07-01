@@ -61,7 +61,7 @@ function applyGrayFilter(imageData, filterType) {
       // Calculando o valor de cinza usando a fórmula da luminosidade
       let gray = r * 0.3 + g * 0.59 + b * 0.11;
 
-      data[i] = data[i + 1] = data[i + 2] = gray; // R, G, B ficam iguais
+      data[i] = data[i + 1] = data[i + 2] = gray;
     }
   } else if (filterType === "1bit") {
     for (let i = 0; i < data.length; i += 4) {
@@ -131,7 +131,6 @@ function showGrayResult() {
 
       ctx.putImageData(imageData, 0, 0);
 
-      // Exibir imagem resultante
       resultContainer.innerHTML = `<p>Imagem após filtro cinza:</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
     };
   } else {
@@ -234,9 +233,9 @@ function saveImage() {
 
       // Criar o link de download da imagem
       const link = document.createElement("a");
-      link.href = canvas.toDataURL(); // O src do canvas (imagem com filtro aplicado)
+      link.href = canvas.toDataURL();
       link.download = "imagem_com_filtro.png"; // Nome do arquivo para download
-      link.click(); // Acionar o download da imagem
+      link.click();
     };
   } else {
     alert("Nenhuma imagem foi gerada para salvar.");
@@ -437,7 +436,7 @@ function RotateImage(imageData, filterType) {
         canvas.width = targetWidth;
         canvas.height = targetHeight;
 
-        ctx.translate(targetWidth, 0); // Mover o ponto de origem para a extremidade direita
+        ctx.translate(targetWidth, 0);
         ctx.scale(-1, 1); // Inverter horizontal
         ctx.drawImage(
           img1,
@@ -452,8 +451,8 @@ function RotateImage(imageData, filterType) {
         ); // Desenhar a imagem invertida
         break;
       case "up-down": // Espelhamento vertical
-        ctx.translate(0, targetHeight); // Mover a origem para a parte inferior
-        ctx.scale(1, -1); // Espelhar verticalmente
+        ctx.translate(0, targetHeight);
+        ctx.scale(1, -1);
         ctx.drawImage(
           img1,
           0,
@@ -501,19 +500,19 @@ function differenceImages() {
 
         let cData = subtractPixelData(imageData1, imageData2);
         ctx.putImageData(cData, 0, 0);
-        const cImageUrl = canvas.toDataURL(); // URL para a imagem c
+        const cImageUrl = canvas.toDataURL();
 
         // Subtrair as imagens b - a (d)
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img2, 0, 0, targetWidth, targetHeight);
         let dData = subtractPixelData(imageData2, imageData1);
         ctx.putImageData(dData, 0, 0);
-        const dImageUrl = canvas.toDataURL(); // URL para a imagem d
+        const dImageUrl = canvas.toDataURL();
 
         // Somar c e d para gerar a imagem e
         let eData = addPixelData(cData, dData);
         ctx.putImageData(eData, 0, 0);
-        const eImageUrl = canvas.toDataURL(); // URL para a imagem e
+        const eImageUrl = canvas.toDataURL();
 
         // Exibir a imagem e (c + d)
         resultContainer.innerHTML = `
@@ -862,7 +861,6 @@ function histograma() {
 
     drawHistogram(histogram, "Histograma Original");
 
-    // Passo 2: Calcular CDF
     const cdf = [...histogram];
     for (let i = 1; i < 256; i++) {
       cdf[i] += cdf[i - 1];
@@ -974,7 +972,7 @@ function FilterMaxMinMean() {
       let newImageData = ctx.createImageData(canvas.width, canvas.height);
       let newData = newImageData.data;
 
-      // Itera sobre cada pixel, respeitando as bordas de acordo com o offset
+      // Itera sobre cada pixel, respeita as bordas de acordo com o offset
       for (let y = offset; y < canvas.height - offset; y++) {
         for (let x = offset; x < canvas.width - offset; x++) {
           let index = (y * canvas.width + x) * 4;
@@ -1039,7 +1037,6 @@ function getNeighbors(x, y, canvas, data, kernelSize) {
   return { r, g, b };
 }
 
-// Função para calcular a média de um array
 function average(arr) {
   let sum = arr.reduce((a, b) => a + b, 0);
   return sum / arr.length;
@@ -1092,11 +1089,10 @@ function applyMedianFilter() {
   }
 }
 
-// Função para calcular a mediana de um array
 function median(arr) {
   arr.sort((a, b) => a - b); // Ordena os valores em ordem crescente
   const middle = Math.floor(arr.length / 2);
-  return arr[middle]; // Retorna o valor do meio, que é a mediana
+  return arr[middle];
 }
 
 function applyOrderFilter() {
@@ -1106,11 +1102,11 @@ function applyOrderFilter() {
   let order = parseInt(document.getElementById("order-value").value);
   const maxOrder = kernelSize * kernelSize;
 
-  // Garante que o valor de 'order' seja válido para o kernel atual
+  // Garante que o valor da ordem seja válido para o kernel atual
   if (order < 1) order = 1;
   if (order > maxOrder) order = maxOrder;
-  document.getElementById("order-value").value = order; // Atualiza o campo no HTML
-  document.getElementById("order-value").max = maxOrder; // Atualiza o max do input
+  document.getElementById("order-value").value = order;
+  document.getElementById("order-value").max = maxOrder;
 
   if (image1Url) {
     let img = new Image();
@@ -1154,10 +1150,9 @@ function applyOrderFilter() {
   }
 }
 
-// Função para aplicar o filtro de ordem
 function orderFilter(arr, order) {
   arr.sort((a, b) => a - b); // Ordena os valores
-  return arr[order - 1]; // Retorna o valor na posição 'ordem'
+  return arr[order - 1];
 }
 
 function applyConservativeSmoothing() {
@@ -1379,7 +1374,7 @@ function applyPrewittFilter() {
           for (let j = -1; j <= 1; j++) {
             for (let i = -1; i <= 1; i++) {
               const index = ((y + j) * canvas.width + (x + i)) * 4;
-              const gray = data[index]; // valor já em tons de cinza
+              const gray = data[index];
               gxSum += gray * gx[j + 1][i + 1];
               gySum += gray * gy[j + 1][i + 1];
             }
@@ -1443,7 +1438,7 @@ function applySobelFilter() {
           for (let j = -1; j <= 1; j++) {
             for (let i = -1; i <= 1; i++) {
               const index = ((y + j) * canvas.width + (x + i)) * 4;
-              const gray = data[index]; // já em cinza
+              const gray = data[index];
               gxSum += gray * gx[j + 1][i + 1];
               gySum += gray * gy[j + 1][i + 1];
             }
@@ -1524,7 +1519,7 @@ function applyLaplacianFilter() {
 function binarizeImage(imageData, threshold = 127) {
   if (!imageData || !imageData.data) {
     console.error("imageData não está definido ou é inválido!");
-    return null; // Retorna null para indicar erro
+    return null;
   }
 
   let data = imageData.data;
@@ -1536,22 +1531,22 @@ function binarizeImage(imageData, threshold = 127) {
     data[i] = data[i + 1] = data[i + 2] = bit; // R, G, B ficam iguais (0 ou 255)
   }
 
-  return imageData; // Retorna a imagem binarizada
+  return imageData;
 }
 
-function dilateImage(imageData, type) {
-  console.log("Dilating image with type:", type);
+function dilateImage(imageData, type, kernelSize) {
   const binarized = structuredCloneImageData(imageData);
   binarizeImage(binarized);
 
   const { width, height, data } = binarized;
   const output = new ImageData(width, height);
   const outputData = output.data;
+  const offset = Math.floor(kernelSize / 2);
 
-  const offsets = getStructuringOffsets(type);
+  const offsets = getStructuringOffsets(type, kernelSize);
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  for (let y = offset; y < height - offset; y++) {
+    for (let x = offset; x < width - offset; x++) {
       let idx = (y * width + x) * 4;
       let shouldDilate = false;
 
@@ -1572,22 +1567,22 @@ function dilateImage(imageData, type) {
       outputData[idx + 3] = 255;
     }
   }
-
   return output;
 }
 
-function erodeImage(imageData, type) {
+function erodeImage(imageData, type, kernelSize) {
   const binarized = structuredCloneImageData(imageData);
   binarizeImage(binarized);
 
   const { width, height, data } = binarized;
   const output = new ImageData(width, height);
   const outputData = output.data;
+  const offset = Math.floor(kernelSize / 2);
 
-  const offsets = getStructuringOffsets(type);
+  const offsets = getStructuringOffsets(type, kernelSize);
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  for (let y = offset; y < height - offset; y++) {
+    for (let x = offset; x < width - offset; x++) {
       let idx = (y * width + x) * 4;
       let shouldErode = true;
 
@@ -1608,40 +1603,38 @@ function erodeImage(imageData, type) {
       outputData[idx + 3] = 255;
     }
   }
-
   return output;
 }
 
-function getStructuringOffsets(type) {
+function getStructuringOffsets(type, kernelSize) {
+  const offsets = [];
+  const offset = Math.floor(kernelSize / 2);
+
   switch (type) {
     case "diamond":
-      return [
-        [0, 0],
-        [0, -1],
-        [-1, 0],
-        [1, 0],
-        [0, 1],
-      ]; // centro + 4 vizinhos
+      for (let dy = -offset; dy <= offset; dy++) {
+        for (let dx = -offset; dx <= offset; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) <= offset) {
+            offsets.push([dx, dy]);
+          }
+        }
+      }
+      break;
     case "line":
-      return [
-        [-1, 0],
-        [0, 0],
-        [1, 0],
-      ]; // linha horizontal com centro
+      for (let dx = -offset; dx <= offset; dx++) {
+        offsets.push([dx, 0]);
+      }
+      break;
     case "square":
     default:
-      return [
-        [-1, -1],
-        [0, -1],
-        [1, -1],
-        [-1, 0],
-        [0, 0],
-        [1, 0],
-        [-1, 1],
-        [0, 1],
-        [1, 1],
-      ];
+      for (let dy = -offset; dy <= offset; dy++) {
+        for (let dx = -offset; dx <= offset; dx++) {
+          offsets.push([dx, dy]);
+        }
+      }
+      break;
   }
+  return offsets;
 }
 
 function structuredCloneImageData(imageData) {
@@ -1650,11 +1643,11 @@ function structuredCloneImageData(imageData) {
   return copy;
 }
 
-function applyOutline(originalImageData, type) {
+function applyOutline(originalImageData, type, kernelSize) {
   const binarizedOriginal = structuredCloneImageData(originalImageData);
   binarizeImage(binarizedOriginal);
 
-  const eroded = erodeImage(originalImageData, type);
+  const eroded = erodeImage(originalImageData, type, kernelSize);
 
   const output = new ImageData(
     originalImageData.width,
@@ -1666,19 +1659,17 @@ function applyOutline(originalImageData, type) {
 
   for (let i = 0; i < originalData.length; i += 4) {
     let diff = originalData[i] - erodedData[i];
-
     outputData[i] = outputData[i + 1] = outputData[i + 2] = diff;
     outputData[i + 3] = 255;
   }
-
   return output;
 }
 
 function showMorphologicalResult(operation) {
   const resultContainer = document.getElementById("result");
   const type = document.getElementById("morphology-type").value;
+  const size = getMorphologySize();
 
-  const imageElement = resultContainer.querySelector("img");
   const img = new Image();
 
   if (image1Url) {
@@ -1693,67 +1684,57 @@ function showMorphologicalResult(operation) {
     const ctx = canvas.getContext("2d");
     canvas.width = targetWidth;
     canvas.height = targetHeight;
-
     ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let resultImageData = null;
 
     switch (operation) {
       case "dilate":
-        resultImageData = dilateImage(imageData, type);
-        lastDilatedImageData = structuredCloneImageData(resultImageData);
+        resultImageData = dilateImage(imageData, type, size);
         break;
-
       case "erode":
-        resultImageData = erodeImage(imageData, type);
-        lastErodedImageData = structuredCloneImageData(resultImageData);
+        resultImageData = erodeImage(imageData, type, size);
         break;
-
       case "opening":
-        resultImageData = applyOpening(imageData, type);
+        resultImageData = applyOpening(imageData, type, size);
         break;
-
       case "closing":
-        resultImageData = applyClosing(imageData, type);
+        resultImageData = applyClosing(imageData, type, size);
         break;
-
       case "outline":
-        // A lógica de contorno correta é a diferença entre o original e o erodido.
-        // Ambos devem usar o mesmo elemento estruturante 'type'.
-
-        // 1. Binariza a imagem original para ter uma base de comparação.
-        const binarizedOriginal = structuredCloneImageData(imageData);
-        binarizeImage(binarizedOriginal);
-
-        // 2. Faz a erosão da imagem original.
-        const erodedImageResult = erodeImage(imageData, type);
-
-        // 3. Calcula a diferença (Borda = Original Binarizada - Erosão)
-        resultImageData = new ImageData(canvas.width, canvas.height);
-        for (let i = 0; i < imageData.data.length; i += 4) {
-          const diff = binarizedOriginal.data[i] - erodedImageResult.data[i];
-          resultImageData.data[i] =
-            resultImageData.data[i + 1] =
-            resultImageData.data[i + 2] =
-              diff; // O resultado da subtração já será 0 ou 255
-          resultImageData.data[i + 3] = 255;
-        }
+        resultImageData = applyOutline(imageData, type, size);
         break;
     }
 
-    ctx.putImageData(resultImageData, 0, 0);
-    resultContainer.innerHTML = `<p>Imagem após ${operation} (${type}):</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
+    if (resultImageData) {
+      ctx.putImageData(resultImageData, 0, 0);
+      resultContainer.innerHTML = `<p>Imagem após ${operation} (${type} ${size}x${size}):</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
+    }
   };
 }
 
-function applyClosing(imageData, type) {
-  const dilated = dilateImage(imageData, type);
-  const closed = erodeImage(dilated, type);
-  return closed;
+function getMorphologySize() {
+  const sizeInput = document.getElementById("struct-size");
+  let size = parseInt(sizeInput.value, 10);
+
+  if (isNaN(size) || size < 3) {
+    return 3;
+  }
+  if (size % 2 === 0) {
+    size += 1;
+    sizeInput.value = size;
+  }
+  return size;
 }
 
-function applyOpening(imageData, type) {
-  const eroded = erodeImage(imageData, type);
-  const opened = dilateImage(eroded, type);
+function applyOpening(imageData, type, kernelSize) {
+  const eroded = erodeImage(imageData, type, kernelSize);
+  const opened = dilateImage(eroded, type, kernelSize);
   return opened;
+}
+
+function applyClosing(imageData, type, kernelSize) {
+  const dilated = dilateImage(imageData, type, kernelSize);
+  const closed = erodeImage(dilated, type, kernelSize);
+  return closed;
 }

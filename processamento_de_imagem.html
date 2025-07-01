@@ -87,6 +87,30 @@
           Filtro de Bordas 2 ordem - Laplacian
         </button>
 
+        <label for="struct-size" id="filter-struct-label"
+          >Tamanho do Elemento Estruturante:</label
+        >
+        <input
+          type="number"
+          id="struct-size"
+          min="3"
+          max="33"
+          value="3"
+          step="2"
+        />
+        <label for="morphology-type">Tipo de Estrutura:</label>
+        <select id="morphology-type">
+          <option value="square">Quadrado (Square)</option>
+          <option value="diamond">Diamante (Diamond)</option>
+          <option value="line">Linha Horizontal (Line)</option>
+        </select>
+        <button onclick="showMorphologicalResult('dilate')">
+          Filtro Morfolóligo - Dilatação
+        </button>
+        <button onclick="showMorphologicalResult('erode')">
+          Filtro Morfolóligo - Erosão
+        </button>
+
         <button onclick="showMorphologicalResult('opening')">
           Filtro Morfolóligo - Abertura
         </button>
@@ -152,15 +176,6 @@
         <button id="reset-button" onclick="resetImages()">
           Apagar Imagens
         </button>
-
-        <label for="filter-kernel" id="filter-kernel-label"
-          >Selecione o Tipo de kernel:</label
-        >
-        <select id="filter-kernel">
-          <option value="3">3x3</option>
-          <option value="5">5x5</option>
-          <option value="7">7x7</option>
-        </select>
       </div>
 
       <!-- Coluna de Resultado -->
@@ -219,19 +234,15 @@
           </select>
           <button onclick="FilterMaxMinMean()">Aplicar Filtro</button>
         </div>
-        <div>
-          <label for="morphology-type">Tipo de Estrutura:</label>
-          <select id="morphology-type">
-            <option value="square">Quadrado (Square)</option>
-            <option value="diamond">Diamante (Diamond)</option>
-            <option value="line">Linha Horizontal (Line)</option>
+        <div class="rotate-container">
+          <label for="filter-kernel" id="filter-kernel-label"
+            >Selecione o Tamanho do kernel:</label
+          ><br />
+          <select id="filter-kernel">
+            <option value="3">3x3</option>
+            <option value="5">5x5</option>
+            <option value="7">7x7</option>
           </select>
-          <button onclick="showMorphologicalResult('dilate')">
-            Filtro Morfolóligo - Dilatação
-          </button>
-          <button onclick="showMorphologicalResult('erode')">
-            Filtro Morfolóligo - Erosão
-          </button>
         </div>
       </div>
     </div>
