@@ -394,6 +394,9 @@ function resetFilter() {
   }
   document.getElementById("order-value").value = 1;
   document.getElementById("gaussiano-value").value = 1;
+  document.getElementById("image-2").innerHTML = image2Url
+    ? `<img src="${image2Url}" alt="Imagem 2" />`
+    : "";
 }
 
 document.getElementById("filter-MMM").addEventListener("change", function () {
@@ -663,7 +666,27 @@ function averagePixelData(imageData1, imageData2) {
 function logicalOperations(operation) {
   const resultContainer = document.getElementById("result");
 
-  if (image1Url && image2Url) {
+  if (image1Url && operation == "NOT") {
+    img1 = new Image();
+    img1.src = image1Url;
+
+    img1.onload = function () {
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      ctx.drawImage(img1, 0, 0, targetWidth, targetHeight);
+      let imageData1 = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      let resultImageData = logicalNot(imageData1);
+
+      ctx.putImageData(resultImageData, 0, 0);
+
+      resultContainer.innerHTML = `<p>Imagem após operação lógica:</p><img src="${canvas.toDataURL()}" alt="Imagem Resultado" />`;
+    };
+  } else if (image1Url && image2Url) {
     img1 = new Image();
     img2 = new Image();
 
@@ -827,12 +850,15 @@ function limiarImages() {
 
 function histograma() {
   const resultContainer = document.getElementById("result");
-  resultContainer.innerHTML = "";
+  const image2Container = document.getElementById("image-2");
 
   if (!image1Url) {
     resultContainer.innerHTML = "<p>Carregue uma imagem primeiro!</p>";
     return;
   }
+
+  resultContainer.innerHTML = "";
+  image2Container.innerHTML = "";
 
   const img = new Image();
   img.src = image1Url;
@@ -859,7 +885,8 @@ function histograma() {
       grayPixels.push(gray);
     }
 
-    drawHistogram(histogram, "Histograma Original");
+    // Passo 2: Desenhar histograma original
+    drawHistogram(histogram, image2Container);
 
     const cdf = [...histogram];
     for (let i = 1; i < 256; i++) {
@@ -880,7 +907,6 @@ function histograma() {
       mapping[i] = Math.floor(
         ((cdf[i] - cdfMin) / (totalPixels - cdfMin)) * (L - 1)
       );
-      // Limitar por segurança (evitar bugs)
       if (mapping[i] < 0) mapping[i] = 0;
       if (mapping[i] > 255) mapping[i] = 255;
     }
@@ -901,29 +927,32 @@ function histograma() {
       const gray = mapping[grayPixels[i]];
       const idx = i * 4;
 
-      newData[idx] = gray; // R
-      newData[idx + 1] = gray; // G
-      newData[idx + 2] = gray; // B
-      newData[idx + 3] = 255; // A (opacidade)
+      newData[idx] = gray;
+      newData[idx + 1] = gray;
+      newData[idx + 2] = gray;
+      newData[idx + 3] = 255;
     }
 
-    // Mostrar imagem equalizada na área da imagem 2 já existente
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
     const tempCtx = tempCanvas.getContext("2d");
     tempCtx.putImageData(newImageData, 0, 0);
 
-    document.getElementById(
-      "image-2"
-    ).innerHTML = `<p style="text-align: center;" id="histograma-exclui-1">Imagem Equalizada:</p><img id="histograma-exclui-2" src="${tempCanvas.toDataURL()}" alt="Imagem 2 Equalizada" />`;
+    resultContainer.innerHTML = `
+      <p>Imagem Equalizada (Resultado):</p>
+      <img src="${tempCanvas.toDataURL()}" alt="Imagem Equalizada" />
+    `;
 
-    drawHistogram(equalizedHistogram, "Histograma Equalizado");
+    drawHistogram(equalizedHistogram, image2Container);
   };
 }
 
-function drawHistogram(histogram, title = "") {
-  const resultContainer = document.getElementById("result");
+function drawHistogram(histogram, targetContainer) {
+  if (!targetContainer) {
+    console.error("Container de destino para o histograma não foi fornecido.");
+    return;
+  }
 
   const canvas = document.createElement("canvas");
   const width = 256;
@@ -944,9 +973,10 @@ function drawHistogram(histogram, title = "") {
   }
 
   const label = document.createElement("p");
-  label.textContent = title;
-  resultContainer.appendChild(label);
-  resultContainer.appendChild(canvas);
+  label.textContent = "|";
+
+  targetContainer.appendChild(label);
+  targetContainer.appendChild(canvas);
 }
 
 function FilterMaxMinMean() {
