@@ -37,9 +37,7 @@
           <button onclick="limiarImages()">Limiarização</button>
         </div>
         <button onclick="histograma()">Histograma da imagem</button>
-        <button onclick="applyMedianFilter()">
-          Filtro de remoção de ruído
-        </button>
+        <button onclick="applyMedianFilter()">Filtro de Mediana</button>
         <div>
           <input
             style="
@@ -226,17 +224,19 @@
           </button>
         </div>
         <div class="rotate-container">
-          <p for="rotation">Selecione o Tipo de Filtro: Max, Min, Mean</p>
+          <p for="rotation">Selecione o Tipo de Filtro: Max, Min, Média</p>
           <select id="filter-MMM">
             <option value="MAX">Máximo</option>
             <option value="MIN">Mínimo</option>
-            <option value="MEAN">Médio</option>
+            <option value="MEAN">Média</option>
           </select>
           <button onclick="FilterMaxMinMean()">Aplicar Filtro</button>
         </div>
         <div class="rotate-container">
           <label for="filter-kernel" id="filter-kernel-label"
-            >Selecione o Tamanho do kernel:</label
+            >Selecione o Tamanho do kernel: <br />
+            MAX,MIN,MÉDIA,MEDIANA,ORDEM, <br />
+            GAUSSIANO,CONSERVATIVO</label
           ><br />
           <select id="filter-kernel">
             <option value="3">3x3</option>
