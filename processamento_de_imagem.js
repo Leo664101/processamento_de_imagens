@@ -1480,9 +1480,9 @@ function applyLaplacianFilter() {
       imageData = applyGrayFilter(imageData, "8bit");
 
       const kernel = [
-        [0, 1, 0],
-        [1, -4, 1],
-        [0, 1, 0],
+        [1, 1, 1],
+        [1, -8, 1],
+        [1, 1, 1],
       ];
 
       const output = new ImageData(canvas.width, canvas.height);
